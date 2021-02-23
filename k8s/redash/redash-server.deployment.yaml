@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redashserver
+  labels:
+    project: msp-invoice
+    bi: redash
+    app: server 
+    env: dev
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+    - name: welcom-port
+      port: 8080
+      targetPort: 8080
+      nodePort: 30812
+      protocol: TCP
+  selector:
+      project: msp-invoice
+      bi: redash
+      app: server 
+      env: dev
+      tier: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    project: msp-invoice
+    bi: redash
+    app: server 
+    env: dev
+    tier: backend
+  name: redash-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: msp-invoice
+      bi: redash
+      app: server 
+      env: dev
+      tier: backend
+  template:
+    metadata:
+      labels:
+        project: msp-invoice
+        bi: redash
+        app: server 
+        env: dev
+        tier: backend
+    spec:
+      initContainers:
+        - name: create-db
+          image: slesh/eugenics:redash-server
+          args:
+            - create_db 
+          env:
+            - name: REDASH_DATABASE_URL
+              value: postgresql://postgres@redashpostgres:5432/postgres            
+      containers: 
+        - image: slesh/eugenics:redash-server
+          imagePullPolicy: Always
+          name: redashserver
+          ports:
+            - containerPort: 8080
+          args:
+            - dev_server
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "0"
+            - name: REDASH_DATABASE_URL
+              value: postgresql://postgres@redashpostgres:5432/postgres
+            - name: REDASH_ENFORCE_CSRF
+              value: "true"
+            - name: REDASH_LOG_LEVEL
+              value: INFO
+            - name: REDASH_MAIL_DEFAULT_SENDER
+              value: redash@example.com
+            - name: REDASH_MAIL_SERVER
+              value: email
+            - name: REDASH_RATELIMIT_ENABLED
+              value: "false"
+            - name: REDASH_REDIS_URL
+              value: redis://redashredis:6379/0

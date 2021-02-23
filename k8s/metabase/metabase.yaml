@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    project: msp-invoice
+    bi: metabase
+    app: metabase 
+    env: dev
+    tier: backend
+  name: metabase
+spec:
+  type: NodePort
+  ports:
+    - name: web-client
+      port: 3000
+      targetPort: 3000
+      nodePort: 30300
+      protocol: TCP
+  selector:
+    project: msp-invoice
+    bi: metabase
+    app: metabase 
+    env: dev
+    tier: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metabase
+  labels:
+    project: msp-invoice
+    bi: metabase
+    app: metabase 
+    env: dev
+    tier: backend
+spec:
+  selector:
+    matchLabels:
+      project: msp-invoice
+      bi: metabase
+      app: metabase 
+      env: dev
+      tier: backend
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        project: msp-invoice
+        bi: metabase
+        app: metabase 
+        env: dev
+        tier: backend
+    spec:
+      volumes:
+        - name: msp-invoice-pv
+          hostPath: 
+            path: /tmp
+            type: DirectoryOrCreate
+      containers:
+        - name: metabase
+          image: 'slesh/eugenics:metabase-clickhouse'
+          imagePullPolicy: Always
+          ports:
+            - name: web
+              containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - name: msp-invoice-pv
+              mountPath: /metabase.db
+              subPath: metabase.db

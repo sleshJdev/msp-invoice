@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    project: msp-invoice
+    bi: redash
+    app: postgres 
+    env: dev
+    tier: database
+  name: redashpostgres
+spec: 
+  ports:
+    - name: postgres-client-port
+      port: 5432
+      targetPort: 5432
+  selector:
+      project: msp-invoice
+      bi: redash
+      app: postgres 
+      env: dev
+      tier: database
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    project: msp-invoice
+    bi: redash
+    app: postgres 
+    env: dev
+    tier: database
+  name: redashpostgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: msp-invoice
+      bi: redash
+      app: postgres 
+      env: dev
+      tier: database
+  template:
+    metadata:
+      labels:
+        project: msp-invoice
+        bi: redash
+        app: postgres 
+        env: dev
+        tier: database
+    spec:
+      volumes:
+        - name: msp-invoice-redash-pv
+          hostPath: 
+            path: /tmp/redash
+            type: DirectoryOrCreate
+      containers:        
+        - image: postgres:9.5-alpine
+          name: redashpostgres
+          volumeMounts:
+            - name: msp-invoice-redash-pv
+              mountPath: /var/lib/postgresql/data
+              subPath: redash-postgres
+          ports:
+            - containerPort: 5432
+          args:
+            - postgres
+            - -c
+            - fsync=off
+            - -c
+            - full_page_writes=off
+            - -c
+            - synchronous_commit=OFF
+          env:
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust

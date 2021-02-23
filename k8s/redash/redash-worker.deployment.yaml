@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    project: msp-invoice
+    bi: redash
+    app: worker 
+    env: dev
+    tier: backend
+  name: redash-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: msp-invoice
+      bi: redash
+      app: worker 
+      env: dev
+      tier: backend
+  template:
+    metadata:
+      labels:
+        project: msp-invoice
+        bi: redash
+        app: worker 
+        env: dev
+        tier: backend
+    spec:
+      containers:        
+        - image: slesh/eugenics:redash-worker
+          name: redashworker
+          args: 
+            - dev_worker
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "0"
+            - name: REDASH_DATABASE_URL
+              value: postgresql://postgres@redashpostgres:5432/postgres
+            - name: REDASH_ENFORCE_CSRF
+              value: "true"
+            - name: REDASH_LOG_LEVEL
+              value: INFO
+            - name: REDASH_MAIL_DEFAULT_SENDER
+              value: redash@example.com
+            - name: REDASH_MAIL_SERVER
+              value: email
+            - name: REDASH_RATELIMIT_ENABLED
+              value: "false"
+            - name: REDASH_REDIS_URL
+              value: redis://redashredis:6379/0
