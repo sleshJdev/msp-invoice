@@ -1,15 +1,16 @@
-const crypto = require('crypto')
-const http = require('https')
+const crypto = require('crypto');
+const http = require('https');
+const fs = require('fs');
 
 const sha256 = (message) => {
     return crypto.createHash('sha256')
         .update(message).digest('hex');
-}
+};
 
 const sha1 = (message) => {
     return crypto.createHash('sha1')
         .update(message).digest('hex');
-}
+};
 
 const username = process.env.USER_NAME
 const password = process.env.PASSWORD
@@ -27,7 +28,23 @@ const claim = Buffer.from(
     + ',rpass2=' + rawSHA256Hash
     + ',rpass1=' + rawSHA1Hash
     + ',rand2=' + random
-).toString('base64')
+).toString('base64');
+
+class AuditSummaries {
+    constructor(summaries) {
+        this.summaries = summaries
+    }
+
+    get serversCount() {
+        return this.summaries
+            .filter(({ OsInfo }) => (OsInfo.includes('Server Standard')))
+            .length
+    }
+
+    get workStationsCount() {
+        return this.summaries.length - this.serversCount
+    }
+}
 
 const justGet = (path, headers) => {
     return new Promise((resolve, reject) => {
@@ -40,7 +57,7 @@ const justGet = (path, headers) => {
             response.on('error', (err) => (reject(err)))
         })
     })
-}
+};
 
 const get = (() => {
     let effectiveAuthInfo = null
@@ -71,56 +88,62 @@ const get = (() => {
             return res.Result
         })
     }
-})()
+})();
 
 const requestToken = async () => {
     return justGet('/auth', {
         Authorization: `Basic ${claim}`
     })
-}
+};
 
-const fetchProcs = async () => (get('/automation/agentprocs'))
+const fetchProcs = () => (get('/automation/agentprocs'));
+const fetchPatchStatus = (agentId) => (get(`/assetmgmt/patch/${agentId}/status`));
+const fetchAuditSummaries = () => (get('/assetmgmt/audit').then(it => new AuditSummaries(it)));
+const fetchAgentSummary = (agentId) => (get(`/assetmgmt/audit/${agentId}/summary`));
+const fetchSecurityProducts = (agentId) => (get(`/assetmgmt/audit/${agentId}/software/securityproducts`));
+const fetchPatchHistory = (agentId) => (get(`/assetmgmt/patch/${agentId}/history`));
+const fetchMissingPatches = (agentId, hideDeniedPatches) => (get(`/assetmgmt/patch/${agentId}/machineupdate/${hideDeniedPatches}`));
+const fetchAgentProcedureHistory = (agentId) => (get(`/automation/agentprocs/${agentId}/history`));
 
-const fetchMachineGroups = (token, orgId) => {
-    return get(`/system/orgs/${orgId}/machinegroups`, {
-        Authorization: `Bearer ${token}`
-    })
-}
+const fetchUser = (userId) => (get(`/system/users/${userId}`));
+const fetchMachineGroups = (orgId) => (get(`/system/orgs/${orgId}/machinegroups`));
+const fetchOrganizations = () => (get('/system/orgs'));
 
-const fetchOrganizations = (token) => {
-    return get('/system/orgs', {
-        Authorization: `Bearer ${token}`
-    })
-}
-
-const fetchPatchStatus = (agentId) => (get(`/assetmgmt/patch/${agentId}/status`))
-const fetchAuditSummaries = () => (get('/assetmgmt/audit'))
-const fetchSecurityProducts = (agentId) => (get(`/assetmgmt/audit/${agentId}/software/securityproducts`))
-const fetchPatchHistory = (agentId) => (get(`/assetmgmt/patch/${agentId}/history`))
-
-const fetchUser = (token, userId) => {
-    return get(`/system/users/${userId}`, {
-        Authorization: `Bearer ${token}`
-    })
+const onError = (error, data) => {
+    if (error) {
+        return console.log(error);
+    }
 }
 
 (async () => {
-    //const authInfo = await requestToken()
-    //const { Result: { ApiToken, Token, AdminId } } = authInfo
-    const summaries = await fetchAuditSummaries()
-    for (let summary of summaries) {
-        const patchStatuses = await fetchPatchStatus(summary.AgentGuid)    
-        const installedSecurityProducts = await fetchSecurityProducts(summary.AgentGuid)
-        const patchHistory = await fetchPatchHistory(summary.AgentGuid)
-        console.log(`Agent name: ${summary.DisplayName}, 
-            patchStatuses: ${JSON.stringify(patchStatuses, null, 2)}, 
-            patchHistory: ${JSON.stringify(patchHistory, null, 2)}`)
-    }
-    const patchStatuses = await fetchPatchStatus(952862034213546)
-    // console.log(summaries.map(it => (it.DisplayName)))
-    // console.log(summaries.map(it => (it.DisplayName)).filter(it => it.toLowerCase().includes('server')))
-    // const procs = await fetchProcs()
-    // console.log(JSON.stringify(procs, null, 2))
+    const agentId = 125050962640143;
 
-    // console.log(JSON.stringify(summaries, null, 2))
+    const procs = await fetchProcs();
+    const auditSummaries = await fetchAuditSummaries();
+    const patchHistory = await fetchPatchHistory(agentId);
+    const agentSummary = await fetchAgentSummary(agentId);
+    const securityProducts = await fetchSecurityProducts(agentId);
+    const missingPatches = await fetchMissingPatches(agentId, false);
+    const patchStatus = await fetchPatchStatus(agentId);
+    const agentProcedureHistory = await fetchAgentProcedureHistory(agentId);
+
+    await fs.writeFile(`procs.json`, JSON.stringify(procs, null, 2), onError);
+    await fs.writeFile(`audit-summaries.json`, JSON.stringify(auditSummaries.summaries, null, 2), onError);
+    await fs.writeFile(`${agentId}-path-history.json`, JSON.stringify(patchHistory, null, 2), onError);
+    await fs.writeFile(`${agentId}-agent-summary.json`, JSON.stringify(agentSummary, null, 2), onError);
+    await fs.writeFile(`${agentId}-fetch-security-products.json`, JSON.stringify(securityProducts, null, 2), onError);
+    await fs.writeFile(`${agentId}-missing-patches.json`, JSON.stringify(missingPatches, null, 2), onError);
+    await fs.writeFile(`${agentId}-patch-status.json`, JSON.stringify(patchStatus, null, 2), onError);
+    await fs.writeFile(`${agentId}-agent-procedure-history.json`, JSON.stringify(agentProcedureHistory, null, 2), onError);
+    console.log(`
+        IT Management Scope
+        Service Period: ${new Date().toLocaleDateString()}
+        Servers Managed: ${auditSummaries.serversCount}
+        Workstations Managed: ${auditSummaries.workStationsCount}
+        --------------------------------------------------------------
+        IT Management Results
+        Viruses And Other Malware Stopped: -
+        Microsoft Security Patches Installed: ${patchHistory.length}
+
+    `);
 })()
