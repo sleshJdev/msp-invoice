@@ -14,7 +14,7 @@ const sha1 = (message) => {
 
 const username = process.env.USER_NAME
 const password = process.env.PASSWORD
-const random = 1000000000000000000 * Math.random();
+const random = 1000000000000000000n * Math.random();
 const rawSHA256Hash = sha256(password);
 const coveredSHA256HashTemp = sha256(password + username);
 const coveredSHA256Hash = sha256(coveredSHA256HashTemp + random);
