@@ -1,0 +1,14 @@
+{
+  "name": "kaseya",
+  "version": "1.0.0",
+  "description": "",
+  "main": "kaseya.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kaseya-client": "^1.0.11"
+  }
+}
