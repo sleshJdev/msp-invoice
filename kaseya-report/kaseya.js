@@ -8,8 +8,9 @@ const {
     fetchSecurityProducts,
     fetchPatchHistory,
     fetchMissingPatches,
-    fetchAgentProcedureHistory
-} = require('kaseya-client');
+    fetchAgentProcedureHistory,
+    fetchLogmonitoring
+} = require('kaseya');
 
 class Agents {
     constructor(agents) {
@@ -45,8 +46,12 @@ const onError = (error, data) => {
     const missingPatches = await fetchMissingPatches(agentId, false);
     const patchStatus = await fetchPatchStatus(agentId);
     const agentProcedureHistory = await fetchAgentProcedureHistory(agentId);
+    const logmonitoring = await fetchLogmonitoring(agentId);
+    
 
-    fs.mkdirSync('./data');
+    if (!fs.existsSync('./data')) {
+        fs.mkdirSync('./data');
+    }
     fs.writeFile(`./data/procs.json`, JSON.stringify(procs, null, 2), onError);
     fs.writeFile(`./data/audit-summaries.json`, JSON.stringify(auditSummaries, null, 2), onError);
     fs.writeFile(`./data/agents.json`, JSON.stringify(agents.agents, null, 2), onError);
@@ -56,6 +61,11 @@ const onError = (error, data) => {
     fs.writeFile(`./data/${agentId}-missing-patches.json`, JSON.stringify(missingPatches, null, 2), onError);
     fs.writeFile(`./data/${agentId}-patch-status.json`, JSON.stringify(patchStatus, null, 2), onError);
     fs.writeFile(`./data/${agentId}-agent-procedure-history.json`, JSON.stringify(agentProcedureHistory, null, 2), onError);
+    fs.writeFile(`./data/${agentId}-logmonitoring.json`, JSON.stringify(logmonitoring, null, 2), onError);
+    // for (let agent of agents.agents) {
+        // const logmonitoring1 = await fetchLogmonitoring(agent.AgentId);
+        // fs.writeFile(`./data/${agent.AgentId}-logmonitoring.json`, JSON.stringify(logmonitoring1, null, 2), onError);
+    // }
     console.log(`
         IT Management Scope
         Service Period: ${new Date().toLocaleDateString()}

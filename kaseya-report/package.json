@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "kaseya-client": "^1.0.11"
+    "kaseya": "^1.0.4"
   }
 }
