@@ -14,7 +14,7 @@ spec:
     - name: web-client
       port: 3000
       targetPort: 3000
-      nodePort: 30300
+      nodePort: 30002
       protocol: TCP
   selector:
     project: msp-invoice

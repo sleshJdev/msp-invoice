@@ -8,14 +8,17 @@ metadata:
     tier: database
   name: clickhouse
 spec:
+  type: NodePort
   ports:
     - name: web-client
       port: 8123
       targetPort: 8123
+      nodePort: 30004
       protocol: TCP
     - name: native-client
       port: 9000
       targetPort: 9000
+      nodePort: 30005
       protocol: TCP
   selector:
     project: msp-invoice

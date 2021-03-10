@@ -14,7 +14,7 @@ spec:
     - name: welcom-port
       port: 8080
       targetPort: 8080
-      nodePort: 30812
+      nodePort: 30003
       protocol: TCP
   selector:
       project: msp-invoice
