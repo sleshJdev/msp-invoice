@@ -1,0 +1,29 @@
+{
+  "name": "kaseya-proxy",
+  "version": "1.0.0",
+  "description": "Proxy server authenticating requests to kaseya MSP",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js",
+    "start": "node node_modules/kaseya/proxy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sleshJdev/msp-invoice.git"
+  },
+  "keywords": [
+    "kaseya",
+    "msp",
+    "proxy",
+    "nodejs"
+  ],
+  "author": "sleshJdev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sleshJdev/msp-invoice/issues"
+  },
+  "homepage": "https://github.com/sleshJdev/msp-invoice#readme",
+  "dependencies": {
+    "kaseya": "^1.0.4"
+  }
+}
