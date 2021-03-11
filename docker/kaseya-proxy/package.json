@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/sleshJdev/msp-invoice#readme",
   "dependencies": {
-    "kaseya": "^1.0.4"
+    "kaseya": "latest"
   }
 }
