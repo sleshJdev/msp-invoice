@@ -5,5 +5,4 @@ COPY ./package.json ./package.json
 ENV PROXY_PORT=8090
 ENV NODE_EXTRA_CA_CERTS='/home/node/sc1-seamless-it-com-chain.pem'
 ENV KASEYA_HOST='sc1.seamless-it.com'
-RUN npm install
-CMD [ "npm", "start" ]
+CMD npm install ; npm start
