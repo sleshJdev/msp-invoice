@@ -66,6 +66,7 @@ Vagrant.configure("2") do |config|
   # via 127.0.0.1 to disable public access
   config.vm.network "forwarded_port", guest: 80, host: 9999, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 6443, host: 6443, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 8001, host: 8001, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 30001, host: 30001, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 30002, host: 30002, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 30003, host: 30003, host_ip: "127.0.0.1"
