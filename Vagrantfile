@@ -113,4 +113,6 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: $script
+
+  config.vagrant.plugins = ["vagrant-scp"]
 end
