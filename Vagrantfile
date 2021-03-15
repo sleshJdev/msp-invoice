@@ -2,15 +2,15 @@
 # vi: set ft=ruby :
 
 $script = <<-SCRIPT
-swapoff -a
+sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key --keyring /etc/apt/trusted.gpg.d/docker.gpg add -
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-add-apt-repository "deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main"
-apt-get install -y apt-transport-https ca-certificates curl software-properties-common gnupg2 nginx docker.io kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-cat <<EOF | tee /etc/docker/daemon.json
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key --keyring /etc/apt/trusted.gpg.d/docker.gpg add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo add-apt-repository "deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main"
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common gnupg2 nginx docker.io kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+cat <<EOF | sudo tee /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
@@ -25,7 +25,8 @@ sudo usermod -aG docker vagrant
 newgrp docker
 IPADDR=`ip -4 address show dev eth1 | grep inet | awk '{print $2}' | cut -f1 -d/`
 NODENAME=$(hostname -s)
-kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-cert-extra-sans=${IPADDR}  --node-name=${NODENAME}
+echo "IPADDR: ${IPADDR}, NODENAME: ${NODENAME}"
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-cert-extra-sans=${IPADDR}  --node-name=${NODENAME}
 sudo --user=vagrant mkdir -p /home/vagrant/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
 sudo chown $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
@@ -67,15 +68,9 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 80, host: 9999, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 6443, host: 6443, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 8001, host: 8001, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30001, host: 30001, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30002, host: 30002, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30003, host: 30003, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30004, host: 30004, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30005, host: 30005, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30006, host: 30006, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30007, host: 30007, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30008, host: 30008, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 30009, host: 30009, host_ip: "127.0.0.1"
+  for port in 30001..30010
+    config.vm.network "forwarded_port", guest: port, host: port, host_ip: "127.0.0.1"
+  end
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -112,7 +107,7 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: $script
+  config.vm.provision "shell", inline: $script, privileged: false
 
   config.vagrant.plugins = ["vagrant-scp"]
 end
