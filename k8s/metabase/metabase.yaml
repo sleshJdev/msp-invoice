@@ -60,7 +60,7 @@ spec:
             type: DirectoryOrCreate
       containers:
         - name: metabase
-          image: 'slesh/eugenics:metabase-clickhouse'
+          image: 'slesh/metabase'
           imagePullPolicy: Always
           ports:
             - name: web
