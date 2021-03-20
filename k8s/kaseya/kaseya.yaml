@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
         - name: kaseya-proxy
-          image: slesh/eugenics:kaseya-proxy
+          image: slesh/kaseya-proxy
           imagePullPolicy: Always
           env:
             - name: KASEYA_USERNAME
