@@ -1,4 +1,4 @@
-FROM apache/superset
+FROM slesh/apache-superset:latest
 # Switching to root to install the required packages
 USER root
 RUN pip uninstall infi.clickhouse_orm \
@@ -6,14 +6,3 @@ RUN pip uninstall infi.clickhouse_orm \
     && pip install sqlalchemy-clickhouse
 # Switching back to using the `superset` user
 USER superset
-RUN superset fab create-admin \
-               --username admin \
-               --firstname Superset \
-               --lastname Admin \
-               --email admin@superset.com \
-               --password admin \
-    && superset db upgrade \
-    && superset init
-
-
-    
