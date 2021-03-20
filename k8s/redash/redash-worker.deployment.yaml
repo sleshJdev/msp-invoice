@@ -27,7 +27,7 @@ spec:
         tier: backend
     spec:
       containers:        
-        - image: slesh/eugenics:redash-worker
+        - image: slesh/redash_worker
           name: redashworker
           args: 
             - dev_worker

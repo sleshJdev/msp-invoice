@@ -12,8 +12,8 @@ spec:
   type: NodePort
   ports:
     - name: welcom-port
-      port: 8080
-      targetPort: 8080
+      port: 5000
+      targetPort: 5000
       nodePort: 30003
       protocol: TCP
   selector:
@@ -53,18 +53,18 @@ spec:
     spec:
       initContainers:
         - name: create-db
-          image: slesh/eugenics:redash-server
+          image: slesh/redash_server
           args:
             - create_db 
           env:
             - name: REDASH_DATABASE_URL
               value: postgresql://postgres@redashpostgres:5432/postgres            
       containers: 
-        - image: slesh/eugenics:redash-server
+        - image: slesh/redash_server
           imagePullPolicy: Always
           name: redashserver
           ports:
-            - containerPort: 8080
+            - containerPort: 5000
           args:
             - dev_server
           env:
