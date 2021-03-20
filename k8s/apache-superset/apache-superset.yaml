@@ -12,8 +12,8 @@ spec:
   type: NodePort
   ports:
     - name: web-client
-      port: 8080
-      targetPort: 8080
+      port: 8088
+      targetPort: 8088
       nodePort: 30001
       protocol: TCP
   selector:
@@ -60,11 +60,11 @@ spec:
             type: DirectoryOrCreate
       containers:
         - name: apache-superset
-          image: 'slesh/eugenics:apache-superset-clickhouse'
+          image: 'slesh/apache-superset-clickhouse'
           imagePullPolicy: Always
           ports:
             - name: web
-              containerPort: 8080
+              containerPort: 8088
               protocol: TCP
           volumeMounts:
             - name: msp-invoice-pv
